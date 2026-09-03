@@ -1,21 +1,10 @@
-# Binaries
+.env
+
+# Build
 bin/
 *.exe
 *.out
 
-# Environment
-.env
-
 # IDE
 .vscode/
 .idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Temporary files
-tmp/

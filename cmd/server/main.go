@@ -10,10 +10,16 @@ import (
 	"book-catalog-api/internal/database"
 	postgresrepo "book-catalog-api/internal/repository/postgres"
 	"book-catalog-api/internal/rest"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	ctx := context.Background()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Println(".env file not found, using environment variables")
+	}
 
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
@@ -76,12 +82,17 @@ func main() {
 	mux.HandleFunc("DELETE /authors/{id}", authorHandler.Delete)
 	mux.HandleFunc("DELETE /users/{id}/reading-list/{book_id}", userHandler.RemoveFromReadingList)
 
+	port := os.Getenv("SERVER_PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + port,
 		Handler: mux,
 	}
 
-	fmt.Println("Server started on http://localhost:8080")
+	fmt.Printf("Server started on http://localhost:%s\n", port)
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
