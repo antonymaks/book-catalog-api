@@ -8,7 +8,6 @@ import (
 	"book-catalog-api/internal/apperror"
 	"book-catalog-api/internal/domain"
 
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -188,12 +187,14 @@ func (r *AuthorRepository) Delete(
 	`
 
 	result, err := r.db.Exec(ctx, query, id)
-
 	if err != nil {
-		var pgErr *pgconn.PgError
+		var sqlErr interface {
+			SQLState() string
+		}
 
-		if errors.As(err, &pgErr) {
-			if pgErr.Code == "23503" {
+		if errors.As(err, &sqlErr) {
+			switch sqlErr.SQLState() {
+			case "23001", "23503":
 				return apperror.ErrConflict
 			}
 		}

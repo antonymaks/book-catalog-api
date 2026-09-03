@@ -167,7 +167,11 @@ func (h *AuthorHandler) Delete(
 ) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil || id <= 0 {
-		writeError(w, http.StatusBadRequest, "invalid author id")
+		writeError(
+			w,
+			http.StatusBadRequest,
+			"invalid author id",
+		)
 		return
 	}
 
@@ -175,7 +179,11 @@ func (h *AuthorHandler) Delete(
 	if err != nil {
 		switch {
 		case errors.Is(err, apperror.ErrNotFound):
-			writeError(w, http.StatusNotFound, "author not found")
+			writeError(
+				w,
+				http.StatusNotFound,
+				"author not found",
+			)
 
 		case errors.Is(err, apperror.ErrConflict):
 			writeError(
@@ -185,7 +193,11 @@ func (h *AuthorHandler) Delete(
 			)
 
 		default:
-			writeError(w, http.StatusInternalServerError, "internal server error")
+			writeError(
+				w,
+				http.StatusInternalServerError,
+				"internal server error",
+			)
 		}
 
 		return
