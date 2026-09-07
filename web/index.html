@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Catalog</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="container">
+        <h1>Book Catalog</h1>
+
+        <section class="controls">
+            <input
+                type="text"
+                id="search"
+                placeholder="Поиск по книгам"
+            >
+
+            <input
+                type="text"
+                id="author"
+                placeholder="Автор"
+            >
+
+            <button id="searchButton">Найти</button>
+        </section>
+
+        <section>
+            <h2>Каталог</h2>
+            <div id="books" class="books"></div>
+        </section>
+
+        <section>
+            <h2>Мой список чтения</h2>
+            <div id="readingList" class="books"></div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
