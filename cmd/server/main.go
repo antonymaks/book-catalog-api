@@ -7,11 +7,17 @@ import (
 	"net/http"
 	"os"
 
+	"book-catalog-api/graph"
 	"book-catalog-api/internal/database"
 	"book-catalog-api/internal/repository/postgres"
 	"book-catalog-api/internal/rest"
 
 	"github.com/joho/godotenv"
+
+	"github.com/99designs/gqlgen/graphql/handler"
+	// "github.com/99designs/gqlgen/graphql/handler/extension"
+	// "github.com/99designs/gqlgen/graphql/handler/transport"
+	"github.com/99designs/gqlgen/graphql/playground"
 )
 
 func main() {
@@ -45,6 +51,19 @@ func main() {
 	bookRepository := postgres.NewBookRepository(db)
 	authorRepository := postgres.NewAuthorRepository(db)
 	userRepository := postgres.NewUserRepository(db)
+
+	graphqlResolver := &graph.Resolver{
+		BookRepository:   bookRepository,
+		AuthorRepository: authorRepository,
+	}
+
+	graphqlServer := handler.NewDefaultServer(
+		graph.NewExecutableSchema(
+			graph.Config{
+				Resolvers: graphqlResolver,
+			},
+		),
+	)
 
 	// REST handlers
 	bookHandler := rest.NewBookHandler(bookRepository)
@@ -92,6 +111,19 @@ func main() {
 	mux.HandleFunc(
 		"DELETE /users/{id}/reading-list/{book_id}",
 		userHandler.RemoveFromReadingList,
+	)
+
+	mux.Handle(
+		"/graphql",
+		graphqlServer,
+	)
+
+	mux.Handle(
+		"/playground",
+		playground.Handler(
+			"GraphQL Playground",
+			"/graphql",
+		),
 	)
 
 	// Frontend
