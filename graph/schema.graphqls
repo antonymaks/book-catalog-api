@@ -1,6 +1,7 @@
 type Author {
   id: ID!
   name: String!
+  books: [Book!]!
 }
 
 type Book {
@@ -10,9 +11,65 @@ type Book {
   author: Author!
 }
 
+input BookFilter {
+  search: String
+  author: String
+  authorId: ID
+  sort: String
+  order: String
+  limit: Int
+  offset: Int
+}
+
+input CreateBookInput {
+  authorId: ID!
+  title: String!
+  description: String
+}
+
+input UpdateBookInput {
+  authorId: ID!
+  title: String!
+  description: String
+}
+
+input CreateAuthorInput {
+  name: String!
+}
+
+input UpdateAuthorInput {
+  name: String!
+}
+
+type User {
+  id: ID!
+  username: String!
+  role: String!
+  readingList: [Book!]!
+}
+
 type Query {
-  books: [Book!]!
+  books(filter: BookFilter): [Book!]!
   book(id: ID!): Book
+
   authors: [Author!]!
   author(id: ID!): Author
+
+  users: [User!]!
+  user(id: ID!): User
+
+  readingList(userId: ID!): [Book!]!
+}
+
+type Mutation {
+  createBook(input: CreateBookInput!): Book!
+  updateBook(id: ID!, input: UpdateBookInput!): Book!
+  deleteBook(id: ID!): Boolean!
+
+  createAuthor(input: CreateAuthorInput!): Author!
+  updateAuthor(id: ID!, input: UpdateAuthorInput!): Author!
+  deleteAuthor(id: ID!): Boolean!
+
+  addBookToReadingList(userId: ID!, bookId: ID!): Boolean!
+  removeBookFromReadingList(userId: ID!, bookId: ID!): Boolean!
 }

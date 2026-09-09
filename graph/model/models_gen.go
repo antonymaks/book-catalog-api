@@ -3,8 +3,9 @@
 package model
 
 type Author struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID    string  `json:"id"`
+	Name  string  `json:"name"`
+	Books []*Book `json:"books"`
 }
 
 type Book struct {
@@ -14,5 +15,45 @@ type Book struct {
 	Author      *Author `json:"author"`
 }
 
+type BookFilter struct {
+	Search   *string `json:"search,omitempty"`
+	Author   *string `json:"author,omitempty"`
+	AuthorID *string `json:"authorId,omitempty"`
+	Sort     *string `json:"sort,omitempty"`
+	Order    *string `json:"order,omitempty"`
+	Limit    *int32  `json:"limit,omitempty"`
+	Offset   *int32  `json:"offset,omitempty"`
+}
+
+type CreateAuthorInput struct {
+	Name string `json:"name"`
+}
+
+type CreateBookInput struct {
+	AuthorID    string  `json:"authorId"`
+	Title       string  `json:"title"`
+	Description *string `json:"description,omitempty"`
+}
+
+type Mutation struct {
+}
+
 type Query struct {
+}
+
+type UpdateAuthorInput struct {
+	Name string `json:"name"`
+}
+
+type UpdateBookInput struct {
+	AuthorID    string  `json:"authorId"`
+	Title       string  `json:"title"`
+	Description *string `json:"description,omitempty"`
+}
+
+type User struct {
+	ID          string  `json:"id"`
+	Username    string  `json:"username"`
+	Role        string  `json:"role"`
+	ReadingList []*Book `json:"readingList"`
 }

@@ -55,6 +55,7 @@ func main() {
 	graphqlResolver := &graph.Resolver{
 		BookRepository:   bookRepository,
 		AuthorRepository: authorRepository,
+		UserRepository:   userRepository,
 	}
 
 	graphqlServer := handler.NewDefaultServer(
