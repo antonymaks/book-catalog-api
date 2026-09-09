@@ -1,9 +1,9 @@
 package graph
 
-import "book-catalog-api/internal/repository/postgres"
+import "book-catalog-api/internal/repository"
 
 type Resolver struct {
-	BookRepository   *postgres.BookRepository
-	AuthorRepository *postgres.AuthorRepository
-	UserRepository   *postgres.UserRepository
+	BookRepository   repository.BookRepository
+	AuthorRepository repository.AuthorRepository
+	UserRepository   repository.UserRepository
 }

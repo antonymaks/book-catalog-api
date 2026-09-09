@@ -1,0 +1,16 @@
+services:
+  mongodb:
+    image: mongo:8
+    container_name: book-catalog-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: book_user
+      MONGO_INITDB_ROOT_PASSWORD: book_password
+      MONGO_INITDB_DATABASE: book_catalog
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

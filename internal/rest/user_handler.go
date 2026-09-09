@@ -8,16 +8,18 @@ import (
 
 	"book-catalog-api/internal/apperror"
 	"book-catalog-api/internal/domain"
-	"book-catalog-api/internal/repository/postgres"
+	"book-catalog-api/internal/repository"
 )
 
 type UserHandler struct {
-	repository *postgres.UserRepository
+	repository repository.UserRepository
 }
 
-func NewUserHandler(repository *postgres.UserRepository) *UserHandler {
+func NewUserHandler(
+	repo repository.UserRepository,
+) *UserHandler {
 	return &UserHandler{
-		repository: repository,
+		repository: repo,
 	}
 }
 

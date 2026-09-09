@@ -9,18 +9,18 @@ import (
 
 	"book-catalog-api/internal/apperror"
 	"book-catalog-api/internal/domain"
-	"book-catalog-api/internal/repository/postgres"
+	"book-catalog-api/internal/repository"
 )
 
 type AuthorHandler struct {
-	repository *postgres.AuthorRepository
+	repository repository.AuthorRepository
 }
 
 func NewAuthorHandler(
-	repository *postgres.AuthorRepository,
+	repo repository.AuthorRepository,
 ) *AuthorHandler {
 	return &AuthorHandler{
-		repository: repository,
+		repository: repo,
 	}
 }
 
