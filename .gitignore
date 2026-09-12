@@ -1,4 +1,4 @@
-# Enviroment
+# Environment
 .env
 
 # Build
@@ -12,3 +12,9 @@ bin/
 
 # Dataset
 data/raw/
+
+# Temporary files
+*.old
+*.backup
+*.bak
+*~

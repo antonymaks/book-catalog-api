@@ -1,0 +1,12 @@
+.git
+.github
+.env
+.vscode
+.idea
+
+data/raw
+
+*.old
+*.backup
+
+README.md

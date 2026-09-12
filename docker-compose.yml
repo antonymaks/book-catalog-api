@@ -1,16 +1,171 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: book-catalog-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: book_catalog
+      POSTGRES_USER: book_user
+      POSTGRES_PASSWORD: book_password
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+      - ./migrations/002_seed.sql:/docker-entrypoint-initdb.d/002_seed.sql:ro
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U book_user -d book_catalog"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+
   mongodb:
     image: mongo:8
     container_name: book-catalog-mongo
     restart: unless-stopped
-    ports:
-      - "27017:27017"
+
     environment:
       MONGO_INITDB_ROOT_USERNAME: book_user
       MONGO_INITDB_ROOT_PASSWORD: book_password
       MONGO_INITDB_DATABASE: book_catalog
+
+    ports:
+      - "27017:27017"
+
     volumes:
       - mongo_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/001_init.js:ro
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--username",
+          "book_user",
+          "--password",
+          "book_password",
+          "--authenticationDatabase",
+          "admin",
+          "--eval",
+          "db.adminCommand('ping')"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+
+  import-postgres:
+    image: golang:1.26-alpine
+    container_name: book-catalog-import-postgres
+
+    working_dir: /app
+
+    volumes:
+      - .:/app
+
+    environment:
+      DATABASE_URL: postgres://book_user:book_password@postgres:5432/book_catalog?sslmode=disable
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    command:
+      [
+        "go",
+        "run",
+        "./cmd/importer/load_postgres.go"
+      ]
+
+    restart: "no"
+
+
+  import-mongo:
+    image: golang:1.26-alpine
+    container_name: book-catalog-import-mongo
+
+    working_dir: /app
+
+    volumes:
+      - .:/app
+
+    environment:
+      MONGO_URL: mongodb://book_user:book_password@mongodb:27017/?authSource=admin
+      MONGO_DATABASE: book_catalog
+
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+    command:
+      [
+        "go",
+        "run",
+        "./cmd/importer/load_mongo.go"
+      ]
+
+    restart: "no"
+
+
+  app-postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: book-catalog-app-postgres
+    restart: unless-stopped
+
+    environment:
+      DB_DRIVER: postgres
+      DATABASE_URL: postgres://book_user:book_password@postgres:5432/book_catalog?sslmode=disable
+      SERVER_PORT: "8080"
+      JWT_SECRET: book_catalog_demo_secret
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      import-postgres:
+        condition: service_completed_successfully
+
+
+  app-mongo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: book-catalog-app-mongo
+    restart: unless-stopped
+
+    environment:
+      DB_DRIVER: mongo
+      MONGO_URL: mongodb://book_user:book_password@mongodb:27017/?authSource=admin
+      MONGO_DATABASE: book_catalog
+      SERVER_PORT: "8080"
+      JWT_SECRET: book_catalog_demo_secret
+
+    ports:
+      - "8081:8080"
+
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      import-mongo:
+        condition: service_completed_successfully
+
 
 volumes:
+  postgres_data:
   mongo_data:
