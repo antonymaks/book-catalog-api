@@ -1,75 +1,75 @@
 type Author {
-  id: ID!
-  name: String!
-  books: [Book!]!
+    id: ID!
+    name: String!
+    books: [Book!]!
 }
 
 type Book {
-  id: ID!
-  title: String!
-  description: String
-  author: Author!
-}
-
-input BookFilter {
-  search: String
-  author: String
-  authorId: ID
-  sort: String
-  order: String
-  limit: Int
-  offset: Int
-}
-
-input CreateBookInput {
-  authorId: ID!
-  title: String!
-  description: String
-}
-
-input UpdateBookInput {
-  authorId: ID!
-  title: String!
-  description: String
-}
-
-input CreateAuthorInput {
-  name: String!
-}
-
-input UpdateAuthorInput {
-  name: String!
+    id: ID!
+    title: String!
+    description: String
+    author: Author!
 }
 
 type User {
-  id: ID!
-  username: String!
-  role: String!
-  readingList: [Book!]!
+    id: ID!
+    username: String!
+    role: String!
+    readingList: [Book!]!
+}
+
+input BookFilter {
+    search: String
+    author: String
+    authorId: ID
+    sort: String
+    order: String
+    limit: Int
+    offset: Int
+}
+
+input CreateBookInput {
+    authorId: ID!
+    title: String!
+    description: String
+}
+
+input UpdateBookInput {
+    authorId: ID!
+    title: String!
+    description: String
+}
+
+input CreateAuthorInput {
+    name: String!
+}
+
+input UpdateAuthorInput {
+    name: String!
 }
 
 type Query {
-  books(filter: BookFilter): [Book!]!
-  book(id: ID!): Book
+    books(filter: BookFilter): [Book!]!
+    book(id: ID!): Book
 
-  authors: [Author!]!
-  author(id: ID!): Author
+    authors: [Author!]!
+    author(id: ID!): Author
 
-  users: [User!]!
-  user(id: ID!): User
+    users: [User!]!
+    user(id: ID!): User
 
-  readingList(userId: ID!): [Book!]!
+    readingList: [Book!]!
 }
 
 type Mutation {
-  createBook(input: CreateBookInput!): Book!
-  updateBook(id: ID!, input: UpdateBookInput!): Book!
-  deleteBook(id: ID!): Boolean!
+    createBook(input: CreateBookInput!): Book!
+    updateBook(id: ID!, input: UpdateBookInput!): Book!
+    deleteBook(id: ID!): Boolean!
 
-  createAuthor(input: CreateAuthorInput!): Author!
-  updateAuthor(id: ID!, input: UpdateAuthorInput!): Author!
-  deleteAuthor(id: ID!): Boolean!
+    createAuthor(input: CreateAuthorInput!): Author!
+    updateAuthor(id: ID!, input: UpdateAuthorInput!): Author!
+    deleteAuthor(id: ID!): Boolean!
 
-  addBookToReadingList(userId: ID!, bookId: ID!): Boolean!
-  removeBookFromReadingList(userId: ID!, bookId: ID!): Boolean!
+    addBookToReadingList(bookId: ID!): Boolean!
+    removeBookFromReadingList(bookId: ID!): Boolean!
 }

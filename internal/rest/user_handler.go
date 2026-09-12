@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"book-catalog-api/internal/apperror"
+	"book-catalog-api/internal/auth"
 	"book-catalog-api/internal/domain"
 	"book-catalog-api/internal/repository"
 )
@@ -212,6 +213,199 @@ func (h *UserHandler) RemoveFromReadingList(
 			w,
 			`{"error":"book not found in reading list"}`,
 			http.StatusNotFound,
+		)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *UserHandler) GetMyReadingList(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	userID, ok := auth.UserIDFromContext(
+		r.Context(),
+	)
+
+	if !ok {
+		writeError(
+			w,
+			http.StatusUnauthorized,
+			"unauthorized",
+		)
+		return
+	}
+
+	books, err := h.repository.GetReadingList(
+		r.Context(),
+		userID,
+	)
+
+	if err != nil {
+		if errors.Is(
+			err,
+			apperror.ErrNotFound,
+		) {
+			writeError(
+				w,
+				http.StatusNotFound,
+				"user not found",
+			)
+			return
+		}
+
+		writeError(
+			w,
+			http.StatusInternalServerError,
+			"failed to get reading list",
+		)
+		return
+	}
+
+	writeJSON(
+		w,
+		http.StatusOK,
+		books,
+	)
+}
+
+func (h *UserHandler) AddToMyReadingList(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	userID, ok := auth.UserIDFromContext(
+		r.Context(),
+	)
+
+	if !ok {
+		writeError(
+			w,
+			http.StatusUnauthorized,
+			"unauthorized",
+		)
+		return
+	}
+
+	var input domain.AddToReadingListRequest
+
+	if err := json.NewDecoder(
+		r.Body,
+	).Decode(&input); err != nil {
+		writeError(
+			w,
+			http.StatusBadRequest,
+			"invalid request body",
+		)
+		return
+	}
+
+	if input.BookID <= 0 {
+		writeError(
+			w,
+			http.StatusBadRequest,
+			"invalid book id",
+		)
+		return
+	}
+
+	err := h.repository.AddToReadingList(
+		r.Context(),
+		userID,
+		input.BookID,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(
+			err,
+			apperror.ErrConflict,
+		):
+			writeError(
+				w,
+				http.StatusConflict,
+				"book already in reading list",
+			)
+
+		case errors.Is(
+			err,
+			apperror.ErrInvalidReference,
+		):
+			writeError(
+				w,
+				http.StatusNotFound,
+				"book not found",
+			)
+
+		default:
+			writeError(
+				w,
+				http.StatusInternalServerError,
+				"failed to add book to reading list",
+			)
+		}
+
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *UserHandler) RemoveFromMyReadingList(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	userID, ok := auth.UserIDFromContext(
+		r.Context(),
+	)
+
+	if !ok {
+		writeError(
+			w,
+			http.StatusUnauthorized,
+			"unauthorized",
+		)
+		return
+	}
+
+	bookID, err := strconv.ParseInt(
+		r.PathValue("book_id"),
+		10,
+		64,
+	)
+
+	if err != nil || bookID <= 0 {
+		writeError(
+			w,
+			http.StatusBadRequest,
+			"invalid book id",
+		)
+		return
+	}
+
+	err = h.repository.RemoveFromReadingList(
+		r.Context(),
+		userID,
+		bookID,
+	)
+
+	if err != nil {
+		if errors.Is(
+			err,
+			apperror.ErrNotFound,
+		) {
+			writeError(
+				w,
+				http.StatusNotFound,
+				"book not found in reading list",
+			)
+			return
+		}
+
+		writeError(
+			w,
+			http.StatusInternalServerError,
+			"failed to remove book from reading list",
 		)
 		return
 	}

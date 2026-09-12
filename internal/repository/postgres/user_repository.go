@@ -8,6 +8,7 @@ import (
 	"book-catalog-api/internal/apperror"
 	"book-catalog-api/internal/domain"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -175,4 +176,89 @@ func (r *UserRepository) RemoveFromReadingList(
 	}
 
 	return nil
+}
+
+func (r *UserRepository) GetByUsername(
+	ctx context.Context,
+	username string,
+) (*domain.UserWithPassword, error) {
+
+	const query = `
+		SELECT id, username, password_hash, role
+		FROM users
+		WHERE username = $1
+	`
+
+	var user domain.UserWithPassword
+
+	err := r.db.QueryRow(
+		ctx,
+		query,
+		username,
+	).Scan(
+		&user.ID,
+		&user.Username,
+		&user.PasswordHash,
+		&user.Role,
+	)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, apperror.ErrNotFound
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf(
+			"failed to get user by username: %w",
+			err,
+		)
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepository) Create(
+	ctx context.Context,
+	input domain.CreateUserRequest,
+) (*domain.User, error) {
+
+	const query = `
+		INSERT INTO users (
+			username,
+			password_hash,
+			role
+		)
+		VALUES ($1, $2, $3)
+		RETURNING id, username, role
+	`
+
+	var user domain.User
+
+	err := r.db.QueryRow(
+		ctx,
+		query,
+		input.Username,
+		input.PasswordHash,
+		input.Role,
+	).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Role,
+	)
+
+	if err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) &&
+			pgErr.Code == "23505" {
+
+			return nil, apperror.ErrConflict
+		}
+
+		return nil, fmt.Errorf(
+			"failed to create user: %w",
+			err,
+		)
+	}
+
+	return &user, nil
 }

@@ -51,12 +51,12 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddBookToReadingList      func(childComplexity int, userID string, bookID string) int
+		AddBookToReadingList      func(childComplexity int, bookID string) int
 		CreateAuthor              func(childComplexity int, input model.CreateAuthorInput) int
 		CreateBook                func(childComplexity int, input model.CreateBookInput) int
 		DeleteAuthor              func(childComplexity int, id string) int
 		DeleteBook                func(childComplexity int, id string) int
-		RemoveBookFromReadingList func(childComplexity int, userID string, bookID string) int
+		RemoveBookFromReadingList func(childComplexity int, bookID string) int
 		UpdateAuthor              func(childComplexity int, id string, input model.UpdateAuthorInput) int
 		UpdateBook                func(childComplexity int, id string, input model.UpdateBookInput) int
 	}
@@ -66,7 +66,7 @@ type ComplexityRoot struct {
 		Authors     func(childComplexity int) int
 		Book        func(childComplexity int, id string) int
 		Books       func(childComplexity int, filter *model.BookFilter) int
-		ReadingList func(childComplexity int, userID string) int
+		ReadingList func(childComplexity int) int
 		User        func(childComplexity int, id string) int
 		Users       func(childComplexity int) int
 	}
@@ -90,8 +90,8 @@ type MutationResolver interface {
 	CreateAuthor(ctx context.Context, input model.CreateAuthorInput) (*model.Author, error)
 	UpdateAuthor(ctx context.Context, id string, input model.UpdateAuthorInput) (*model.Author, error)
 	DeleteAuthor(ctx context.Context, id string) (bool, error)
-	AddBookToReadingList(ctx context.Context, userID string, bookID string) (bool, error)
-	RemoveBookFromReadingList(ctx context.Context, userID string, bookID string) (bool, error)
+	AddBookToReadingList(ctx context.Context, bookID string) (bool, error)
+	RemoveBookFromReadingList(ctx context.Context, bookID string) (bool, error)
 }
 type QueryResolver interface {
 	Books(ctx context.Context, filter *model.BookFilter) ([]*model.Book, error)
@@ -100,7 +100,7 @@ type QueryResolver interface {
 	Author(ctx context.Context, id string) (*model.Author, error)
 	Users(ctx context.Context) ([]*model.User, error)
 	User(ctx context.Context, id string) (*model.User, error)
-	ReadingList(ctx context.Context, userID string) ([]*model.Book, error)
+	ReadingList(ctx context.Context) ([]*model.Book, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -175,7 +175,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.AddBookToReadingList(childComplexity, args["userId"].(string), args["bookId"].(string)), true
+		return e.ComplexityRoot.Mutation.AddBookToReadingList(childComplexity, args["bookId"].(string)), true
 	case "Mutation.createAuthor":
 		if e.ComplexityRoot.Mutation.CreateAuthor == nil {
 			break
@@ -230,7 +230,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.RemoveBookFromReadingList(childComplexity, args["userId"].(string), args["bookId"].(string)), true
+		return e.ComplexityRoot.Mutation.RemoveBookFromReadingList(childComplexity, args["bookId"].(string)), true
 	case "Mutation.updateAuthor":
 		if e.ComplexityRoot.Mutation.UpdateAuthor == nil {
 			break
@@ -299,12 +299,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		args, err := ec.field_Query_readingList_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Query.ReadingList(childComplexity, args["userId"].(string)), true
+		return e.ComplexityRoot.Query.ReadingList(childComplexity), true
 	case "Query.user":
 		if e.ComplexityRoot.Query.User == nil {
 			break
@@ -614,22 +609,14 @@ func (ec *executionContext) childFields___Type(ctx context.Context, field graphq
 func (ec *executionContext) field_Mutation_addBookToReadingList_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "userId",
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "bookId",
 		func(ctx context.Context, v any) (string, error) {
 			return ec.unmarshalNID2string(ctx, v)
 		})
 	if err != nil {
 		return nil, err
 	}
-	args["userId"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "bookId",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNID2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["bookId"] = arg1
+	args["bookId"] = arg0
 	return args, nil
 }
 
@@ -692,22 +679,14 @@ func (ec *executionContext) field_Mutation_deleteBook_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_removeBookFromReadingList_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "userId",
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "bookId",
 		func(ctx context.Context, v any) (string, error) {
 			return ec.unmarshalNID2string(ctx, v)
 		})
 	if err != nil {
 		return nil, err
 	}
-	args["userId"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "bookId",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNID2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["bookId"] = arg1
+	args["bookId"] = arg0
 	return args, nil
 }
 
@@ -808,20 +787,6 @@ func (ec *executionContext) field_Query_books_args(ctx context.Context, rawArgs 
 		return nil, err
 	}
 	args["filter"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_readingList_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "userId",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNID2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["userId"] = arg0
 	return args, nil
 }
 
@@ -1352,7 +1317,7 @@ func (ec *executionContext) _Mutation_addBookToReadingList(ctx context.Context, 
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().AddBookToReadingList(ctx, fc.Args["userId"].(string), fc.Args["bookId"].(string))
+			return ec.Resolvers.Mutation().AddBookToReadingList(ctx, fc.Args["bookId"].(string))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
@@ -1396,7 +1361,7 @@ func (ec *executionContext) _Mutation_removeBookFromReadingList(ctx context.Cont
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().RemoveBookFromReadingList(ctx, fc.Args["userId"].(string), fc.Args["bookId"].(string))
+			return ec.Resolvers.Mutation().RemoveBookFromReadingList(ctx, fc.Args["bookId"].(string))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
@@ -1679,8 +1644,7 @@ func (ec *executionContext) _Query_readingList(ctx context.Context, field graphq
 			return ec.fieldContext_Query_readingList(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().ReadingList(ctx, fc.Args["userId"].(string))
+			return ec.Resolvers.Query().ReadingList(ctx)
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Book) graphql.Marshaler {
@@ -1690,7 +1654,7 @@ func (ec *executionContext) _Query_readingList(ctx context.Context, field graphq
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Query_readingList(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_readingList(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1699,17 +1663,6 @@ func (ec *executionContext) fieldContext_Query_readingList(ctx context.Context, 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Book(ctx, field)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_readingList_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }

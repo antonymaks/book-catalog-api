@@ -87,4 +87,14 @@ type UserRepository interface {
 		userID int64,
 		bookID int64,
 	) error
+
+	GetByUsername(
+		ctx context.Context,
+		username string,
+	) (*domain.UserWithPassword, error)
+
+	Create(
+		ctx context.Context,
+		input domain.CreateUserRequest,
+	) (*domain.User, error)
 }

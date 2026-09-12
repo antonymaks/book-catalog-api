@@ -3,40 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Catalog</title>
+    <title>Каталог книг</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <main class="container">
-        <h1>Book Catalog</h1>
+        <h1>Каталог книг</h1>
 
-        <section class="controls">
-            <input
-                type="text"
-                id="search"
-                placeholder="Поиск по книгам"
-            >
-
-            <input
-                type="text"
-                id="author"
-                placeholder="Автор"
-            >
-
-            <button id="searchButton">Найти</button>
+        <section class="block">
+            <h2>Настройки</h2>
+            <label>API
+                <select id="apiSelect">
+                    <option value="rest">REST</option>
+                    <option value="graphql">GraphQL</option>
+                </select>
+            </label>
+            <label>База данных
+                <select id="dbSelect">
+                    <option value="postgres">PostgreSQL</option>
+                    <option value="mongo">MongoDB</option>
+                </select>
+            </label>
+            <span id="status">Проверка соединения...</span>
         </section>
 
-        <section>
-            <h2>Каталог</h2>
-            <div id="books" class="books"></div>
+        <section id="authSection" class="block">
+            <h2>Авторизация</h2>
+            <div class="row">
+                <input id="username" type="text" placeholder="Логин">
+                <input id="password" type="password" placeholder="Пароль">
+                <button id="loginButton" type="button">Войти</button>
+                <button id="registerButton" type="button">Регистрация</button>
+            </div>
+            <p id="authMessage"></p>
         </section>
 
-        <section>
+        <section id="userSection" class="block hidden">
+            Пользователь: <strong id="currentUser"></strong>
+            (<span id="currentRole"></span>)
+            <button id="logoutButton" type="button">Выйти</button>
+        </section>
+
+        <section class="block">
+            <h2>Книги</h2>
+            <div class="row">
+                <input id="searchInput" type="text" placeholder="Поиск по названию">
+                <input id="authorInput" type="text" placeholder="Автор">
+                <button id="searchButton" type="button">Найти</button>
+                <button id="resetButton" type="button">Сбросить</button>
+            </div>
+            <div id="books"></div>
+        </section>
+
+        <section class="block">
             <h2>Мой список чтения</h2>
-            <div id="readingList" class="books"></div>
+            <div id="readingList">Для работы со списком необходимо войти.</div>
         </section>
-    </main>
 
+        <section id="adminSection" class="block hidden">
+            <h2>Администрирование</h2>
+            <div class="admin-grid">
+                <div>
+                    <h3 id="bookFormTitle">Добавить книгу</h3>
+                    <form id="bookForm">
+                        <input id="bookId" type="hidden">
+                        <label>Название
+                            <input id="bookTitle" type="text" required>
+                        </label>
+                        <label>Автор
+                            <select id="bookAuthor" required></select>
+                        </label>
+                        <label>Описание
+                            <textarea id="bookDescription" rows="4"></textarea>
+                        </label>
+                        <div class="row">
+                            <button type="submit">Сохранить</button>
+                            <button id="cancelBookEdit" type="button" class="hidden">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div>
+                    <h3 id="authorFormTitle">Добавить автора</h3>
+                    <form id="authorForm">
+                        <input id="authorId" type="hidden">
+                        <label>Имя
+                            <input id="authorName" type="text" required>
+                        </label>
+                        <div class="row">
+                            <button type="submit">Сохранить</button>
+                            <button id="cancelAuthorEdit" type="button" class="hidden">Отмена</button>
+                        </div>
+                    </form>
+                    <h3>Авторы</h3>
+                    <div id="authors"></div>
+                </div>
+            </div>
+        </section>
+
+        <p id="message"></p>
+    </main>
     <script src="app.js"></script>
 </body>
 </html>
